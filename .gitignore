@@ -1,0 +1,44 @@
+# Compiled binary
+yapematrix
+
+# Object files
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Python virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+*.out
+*.exe
+*.app
+
+# Core dumps
+core
+core.*
