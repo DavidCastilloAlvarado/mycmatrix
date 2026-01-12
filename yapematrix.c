@@ -8,7 +8,7 @@
 
 #define YAPE_TEXT "YAPE"
 #define YAPE_HEIGHT 11
-#define YAPE_WIDTH 70
+#define YAPE_WIDTH 42
 
 // Large ASCII art representation of YAPE (1 = character position, 0 = empty)
 int yape_shape[YAPE_HEIGHT][YAPE_WIDTH] = {
@@ -218,10 +218,10 @@ void draw_column(Column *col) {
             } else {
                 // Apply boldness based on proximity to YAPE
                 switch (col->boldness[i]) {
-                    case 3: // Inside YAPE - BRIGHT cyan/white and BOLD
+                    case 3: // Inside YAPE - BRIGHT yellow and BOLD
                         if (is_in_yape_shape(col->x, y)) {
-                            color_pair = 4;  // Cyan
-                            attr = A_BOLD | A_STANDOUT;
+                            color_pair = 4;  // Yellow
+                            attr = A_BOLD | A_REVERSE;
                         } else {
                             color_pair = 2;
                             attr = A_BOLD;
@@ -268,17 +268,17 @@ int main() {
     init_pair(1, COLOR_GREEN, COLOR_BLACK);      // Dim green
     init_pair(2, COLOR_GREEN, COLOR_BLACK);      // Normal green  
     init_pair(3, COLOR_WHITE, COLOR_BLACK);      // White for head
-    init_pair(4, COLOR_CYAN, COLOR_BLACK);       // Cyan for YAPE
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK);     // Yellow for YAPE
     
     getmaxyx(stdscr, max_rows, max_cols);
     
-    // Initialize columns
-    num_columns = max_cols;
+    // Initialize columns - create 2x density for more rain
+    num_columns = max_cols * 2;
     columns = malloc(num_columns * sizeof(Column));
     
     for (int i = 0; i < num_columns; i++) {
-        init_column(&columns[i], i);
-        columns[i].y -= rand() % (max_rows / 2); // Less stagger for more density
+        init_column(&columns[i], i % max_cols);  // Map multiple columns to same x position
+        columns[i].y -= rand() % max_rows; // Full stagger for overlapping columns
     }
     
     // Main loop
@@ -286,6 +286,33 @@ int main() {
         int ch = getch();
         if (ch == 'q' || ch == 'Q' || ch == 27) { // q, Q, or ESC
             break;
+        }
+        
+        // Update screen dimensions dynamically (handles window resize)
+        int new_rows, new_cols;
+        getmaxyx(stdscr, new_rows, new_cols);
+        
+        // If window was resized, adjust columns
+        if (new_cols != max_cols || new_rows != max_rows) {
+            max_rows = new_rows;
+            max_cols = new_cols;
+            
+            // Reallocate columns if width changed
+            if (new_cols != num_columns) {
+                for (int i = 0; i < num_columns; i++) {
+                    free(columns[i].chars);
+                    free(columns[i].boldness);
+                }
+                free(columns);
+                
+                num_columns = max_cols * 2;
+                columns = malloc(num_columns * sizeof(Column));
+                
+                for (int i = 0; i < num_columns; i++) {
+                    init_column(&columns[i], i % max_cols);
+                    columns[i].y -= rand() % max_rows;
+                }
+            }
         }
         
         erase();
