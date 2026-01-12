@@ -1,6 +1,6 @@
-# YAPE Matrix
+# MyCMatrix
 
-A Matrix-style digital rain terminal effect that forms the word "YAPE" through concentrated and bold characters, inspired by cmatrix.
+A Matrix-style digital rain terminal effect with customizable logo support, inspired by cmatrix.
 
 ## Features
 
@@ -41,7 +41,7 @@ make
 Run the program:
 
 ```bash
-./yapematrix
+./mycmatrix
 ```
 
 Or:

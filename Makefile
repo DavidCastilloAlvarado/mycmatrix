@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -O2
 LDFLAGS = -lncurses -lm
-TARGET = yapematrix
-SRC = yapematrix.c
+TARGET = mycmatrix
+SRC = mycmatrix.c
 
 all: $(TARGET)
 

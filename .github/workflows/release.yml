@@ -1,0 +1,103 @@
+name: Build and Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            artifact_name: mycmatrix
+            asset_name: mycmatrix-linux-x86_64
+          - os: ubuntu-20.04
+            arch: x86_64
+            artifact_name: mycmatrix
+            asset_name: mycmatrix-linux-x86_64-ubuntu20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate version format
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must match format vX.Y.Z (e.g., v1.0.0)"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libncurses5-dev libncursesw5-dev build-essential
+
+      - name: Build
+        run: make
+
+      - name: Strip binary
+        run: strip mycmatrix
+
+      - name: Rename binary
+        run: mv mycmatrix ${{ matrix.asset_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.asset_name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ github.event.inputs.version }} -m "Release ${{ github.event.inputs.version }}"
+          git push origin ${{ github.event.inputs.version }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          files: artifacts/**/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
