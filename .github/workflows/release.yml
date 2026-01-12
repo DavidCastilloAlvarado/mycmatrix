@@ -74,6 +74,9 @@ jobs:
       - name: Rename binary
         run: mv mycmatrix ${{ matrix.asset_name }}
 
+      - name: Make binary executable
+        run: chmod +x ${{ matrix.asset_name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
