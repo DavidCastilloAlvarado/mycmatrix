@@ -22,10 +22,18 @@ jobs:
             arch: x86_64
             artifact_name: mycmatrix
             asset_name: mycmatrix-linux-x86_64
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
+            arch: aarch64
+            artifact_name: mycmatrix
+            asset_name: mycmatrix-linux-arm64
+          - os: macos-latest
             arch: x86_64
             artifact_name: mycmatrix
-            asset_name: mycmatrix-linux-x86_64-ubuntu20
+            asset_name: mycmatrix-macos-x86_64
+          - os: macos-latest
+            arch: arm64
+            artifact_name: mycmatrix
+            asset_name: mycmatrix-macos-arm64
 
     steps:
       - name: Checkout code
@@ -42,11 +50,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libncurses5-dev libncursesw5-dev build-essential
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y libncurses5-dev libncursesw5-dev build-essential
+            if [ "${{ matrix.arch }}" == "aarch64" ]; then
+              sudo apt-get install -y gcc-aarch64-linux-gnu
+            fi
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install ncurses
+          fi
 
       - name: Build
-        run: make
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ] && [ "${{ matrix.arch }}" == "aarch64" ]; then
+            CC=aarch64-linux-gnu-gcc make
+          else
+            make
+          fi
 
       - name: Strip binary
         run: strip mycmatrix
