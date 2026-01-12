@@ -5,6 +5,7 @@
 #include <time.h>
 #include <ncurses.h>
 #include <signal.h>
+#include <getopt.h>
 
 #define YAPE_TEXT "YAPE"
 #define YAPE_HEIGHT 31
@@ -53,9 +54,22 @@ Column *columns;
 int num_columns;
 int max_rows, max_cols;
 int running = 1;
+int rain_color = COLOR_GREEN;  // Default rain color
+int logo_color = COLOR_YELLOW; // Default logo color
 
 void finish(int sig) {
     running = 0;
+}
+
+void print_usage(char *program_name) {
+    printf("Usage: %s [OPTIONS]\n", program_name);
+    printf("Matrix rain effect with custom logo\n\n");
+    printf("Options:\n");
+    printf("  -C COLOR  Set rain color: green (default), red, blue, yellow, cyan, white, magenta\n");
+    printf("  -L COLOR  Set logo color: yellow (default), red, blue, green, cyan, white, magenta\n");
+    printf("  -h        Show this help message\n");
+    printf("\nControls:\n");
+    printf("  q, Q, ESC Exit the program\n");
 }
 
 char get_random_char() {
@@ -264,7 +278,63 @@ void draw_column(Column *col) {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    int opt;
+    
+    // Parse command line arguments
+    while ((opt = getopt(argc, argv, "C:L:h")) != -1) {
+        switch (opt) {
+            case 'C':
+                if (strcmp(optarg, "red") == 0) {
+                    rain_color = COLOR_RED;
+                } else if (strcmp(optarg, "blue") == 0) {
+                    rain_color = COLOR_BLUE;
+                } else if (strcmp(optarg, "yellow") == 0) {
+                    rain_color = COLOR_YELLOW;
+                } else if (strcmp(optarg, "cyan") == 0) {
+                    rain_color = COLOR_CYAN;
+                } else if (strcmp(optarg, "white") == 0) {
+                    rain_color = COLOR_WHITE;
+                } else if (strcmp(optarg, "magenta") == 0) {
+                    rain_color = COLOR_MAGENTA;
+                } else if (strcmp(optarg, "green") == 0) {
+                    rain_color = COLOR_GREEN;
+                } else {
+                    fprintf(stderr, "Unknown color: %s\n", optarg);
+                    fprintf(stderr, "Available colors: green, red, blue, yellow, cyan, white, magenta\n");
+                    return 1;
+                }
+                break;
+            case 'L':
+                if (strcmp(optarg, "red") == 0) {
+                    logo_color = COLOR_RED;
+                } else if (strcmp(optarg, "blue") == 0) {
+                    logo_color = COLOR_BLUE;
+                } else if (strcmp(optarg, "yellow") == 0) {
+                    logo_color = COLOR_YELLOW;
+                } else if (strcmp(optarg, "cyan") == 0) {
+                    logo_color = COLOR_CYAN;
+                } else if (strcmp(optarg, "white") == 0) {
+                    logo_color = COLOR_WHITE;
+                } else if (strcmp(optarg, "magenta") == 0) {
+                    logo_color = COLOR_MAGENTA;
+                } else if (strcmp(optarg, "green") == 0) {
+                    logo_color = COLOR_GREEN;
+                } else {
+                    fprintf(stderr, "Unknown logo color: %s\n", optarg);
+                    fprintf(stderr, "Available colors: yellow, red, blue, green, cyan, white, magenta\n");
+                    return 1;
+                }
+                break;
+            case 'h':
+                print_usage(argv[0]);
+                return 0;
+            default:
+                print_usage(argv[0]);
+                return 1;
+        }
+    }
+    
     srand(time(NULL));
     
     // Setup signal handler
@@ -280,10 +350,10 @@ int main() {
     nodelay(stdscr, TRUE);
     
     // Initialize color pairs
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);      // Dim green
-    init_pair(2, COLOR_GREEN, COLOR_BLACK);      // Normal green  
-    init_pair(3, COLOR_WHITE, COLOR_BLACK);      // White for head
-    init_pair(4, COLOR_YELLOW, COLOR_BLACK);     // Yellow for YAPE
+    init_pair(1, rain_color, COLOR_BLACK);      // Dim rain color
+    init_pair(2, rain_color, COLOR_BLACK);      // Normal rain color
+    init_pair(3, COLOR_WHITE, COLOR_BLACK);     // White for head
+    init_pair(4, logo_color, COLOR_BLACK);      // Logo color
     
     getmaxyx(stdscr, max_rows, max_cols);
     
