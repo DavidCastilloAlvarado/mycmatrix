@@ -3,7 +3,7 @@
 
 set -e
 
-REPO="david/yape"  # Change this to your GitHub username/repo
+REPO="DavidCastilloAlvarado/mycmatrix"  # Change this to your GitHub username/repo
 INSTALL_DIR="/usr/local/bin"
 BINARY_NAME="mycmatrix"
 
