@@ -11,6 +11,11 @@ BINARY_NAME="mycmatrix"
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 
+# Map OS names
+if [ "$OS" = "darwin" ]; then
+    OS="macos"
+fi
+
 # Map architecture names
 case "$ARCH" in
     x86_64)
@@ -45,14 +50,26 @@ echo "Downloading from: $DOWNLOAD_URL"
 
 # Download binary
 TMP_FILE=$(mktemp)
-if ! curl -L -o "$TMP_FILE" "$DOWNLOAD_URL"; then
-    echo "Error: Download failed"
+echo "Downloading binary..."
+HTTP_CODE=$(curl -L -w "%{http_code}" -o "$TMP_FILE" "$DOWNLOAD_URL")
+
+if [ "$HTTP_CODE" != "200" ]; then
+    echo "Error: Download failed with HTTP status $HTTP_CODE"
+    echo "URL: $DOWNLOAD_URL"
     rm -f "$TMP_FILE"
     exit 1
 fi
 
+if [ ! -s "$TMP_FILE" ]; then
+    echo "Error: Downloaded file is empty"
+    rm -f "$TMP_FILE"
+    exit 1
+fi
+
+echo "Download successful!"
+
 # Remove quarantine attribute on macOS
-if [ "$OS" = "darwin" ]; then
+if [ "$OS" = "macos" ]; then
     echo "Removing macOS quarantine attribute..."
     xattr -d com.apple.quarantine "$TMP_FILE" 2>/dev/null || true
 fi
