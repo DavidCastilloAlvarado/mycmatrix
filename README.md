@@ -41,6 +41,14 @@ chmod +x mycmatrix-*
 ./mycmatrix-*
 ```
 
+**macOS Users**: If you get a security warning about an unverified developer, run:
+
+```bash
+xattr -d com.apple.quarantine mycmatrix-macos-*
+chmod +x mycmatrix-macos-*
+./mycmatrix-macos-*
+```
+
 ### Build from Source
 
 #### Requirements

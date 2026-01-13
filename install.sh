@@ -4,7 +4,7 @@
 set -e
 
 REPO="DavidCastilloAlvarado/mycmatrix"  # Change this to your GitHub username/repo
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="$HOME/.local/bin"  # User-local install, no sudo needed
 BINARY_NAME="mycmatrix"
 
 # Detect OS and architecture
@@ -51,12 +51,31 @@ if ! curl -L -o "$TMP_FILE" "$DOWNLOAD_URL"; then
     exit 1
 fi
 
+# Remove quarantine attribute on macOS
+if [ "$OS" = "darwin" ]; then
+    echo "Removing macOS quarantine attribute..."
+    xattr -d com.apple.quarantine "$TMP_FILE" 2>/dev/null || true
+fi
+
 # Make executable
 chmod +x "$TMP_FILE"
 
-# Install (requires sudo for /usr/local/bin)
-echo "Installing to $INSTALL_DIR/$BINARY_NAME (requires sudo)..."
-sudo mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
+# Create install directory if it doesn't exist
+mkdir -p "$INSTALL_DIR"
+
+# Install (no sudo required)
+echo "Installing to $INSTALL_DIR/$BINARY_NAME..."
+mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
+
+# Add to PATH if not already there
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    echo ""
+    echo "Add to your PATH by running:"
+    echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
+    echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
+    echo ""
+    echo "Then restart your shell or run: source ~/.bashrc (or ~/.zshrc)"
+fi
 
 echo "✓ mycmatrix installed successfully!"
 echo "Run 'mycmatrix -h' to get started"
