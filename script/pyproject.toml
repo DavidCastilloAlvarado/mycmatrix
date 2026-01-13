@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "yape"
+name = "maskCreatorMatrixEffect"
 version = "0.1.0"
-description = "YAPE Matrix effect with image to mask converter"
+description = "Matrix effect with image to mask converter"
 authors = ["david"]
 readme = "README.md"
 package-mode = false
